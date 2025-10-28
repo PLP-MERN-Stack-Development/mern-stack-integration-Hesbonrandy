@@ -13,7 +13,6 @@ export const AuthProvider = ({ children }) => {
     const token = localStorage.getItem('token');
     if (token) {
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      // Optional: fetch user profile here
     }
     setLoading(false);
   }, []);
@@ -27,13 +26,24 @@ export const AuthProvider = ({ children }) => {
     return userData;
   };
 
+  const register = async (email, password) => {
+    const res = await axios.post('/api/auth/register', { email, password });
+    const { token, ...userData } = res.data;
+    localStorage.setItem('token', token);
+    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    setUser(userData);
+    return userData;
+  };
+
   const logout = () => {
     localStorage.removeItem('token');
     delete axios.defaults.headers.common['Authorization'];
     setUser(null);
   };
 
-  const value = { user, login, logout, loading };
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={{ user, login, register, logout, loading }}>
+      {children}
+    </AuthContext.Provider>
+  );
 };

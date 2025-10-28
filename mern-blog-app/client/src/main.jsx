@@ -5,6 +5,8 @@ import App from './App';
 import Home from './pages/Home';
 import PostDetail from './pages/PostDetail';
 import CreatePost from './pages/CreatePost';
+import { AuthProvider } from './context/AuthContext';
+import Login from './pages/Login';
 
 const router = createBrowserRouter([
   {
@@ -12,6 +14,7 @@ const router = createBrowserRouter([
     element: <App />,
     children: [
       { index: true, element: <Home /> },
+      { path: 'login', element: <Login /> },
       { path: 'posts/:id', element: <PostDetail /> },
       { path: 'posts/new', element: <CreatePost /> }
     ]
@@ -20,6 +23,8 @@ const router = createBrowserRouter([
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <RouterProvider router={router} />
+    <AuthProvider>
+  <RouterProvider router={router} />
+</AuthProvider>
   </React.StrictMode>
 );

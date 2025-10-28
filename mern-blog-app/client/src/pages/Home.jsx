@@ -5,6 +5,16 @@ import axios from 'axios';
 export default function Home() {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const handleDelete = async (id) => {
+  if (window.confirm('Delete this post?')) {
+    try {
+      await axios.delete(`/api/posts/${id}`);
+      setPosts(posts.filter(post => post._id !== id));
+    } catch (err) {
+      alert('Failed to delete post');
+    }
+  }
+};
 
   useEffect(() => {
     axios.get('/api/posts')
@@ -33,6 +43,7 @@ export default function Home() {
           <div key={post._id} style={{ border: '1px solid #eee', padding: '1rem', margin: '1rem 0' }}>
             <h3><Link to={`/posts/${post._id}`}>{post.title}</Link></h3>
             <p>Category: {post.category?.name || 'Uncategorized'}</p>
+            <button onClick={() => handleDelete(post._id)}>Delete</button>
             <small>{new Date(post.createdAt).toLocaleDateString()}</small>
           </div>
         ))

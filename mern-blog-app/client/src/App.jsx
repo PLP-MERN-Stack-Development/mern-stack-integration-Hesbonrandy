@@ -1,9 +1,22 @@
 import { Outlet } from 'react-router-dom';
+import { useAuth } from './context/AuthContext';
 
 export default function App() {
+  const { user, logout } = useAuth();
+
   return (
     <div style={{ maxWidth: '800px', margin: '0 auto', padding: '1rem' }}>
-      <h1>My MERN Blog</h1>
+      <header style={{ display: 'flex', justifyContent: 'space-between' }}>
+        <h1>My MERN Blog</h1>
+        {user ? (
+          <div>
+            <span>Hello, {user.email}</span>
+            <button onClick={logout} style={{ marginLeft: '1rem' }}>Logout</button>
+          </div>
+        ) : (
+          <Link to="/login">Login</Link>
+        )}
+      </header>
       <hr />
       <main>
         <Outlet />
