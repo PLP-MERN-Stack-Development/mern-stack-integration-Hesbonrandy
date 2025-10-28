@@ -120,3 +120,87 @@ mern-blog-app/
 ## License
 
 MIT License
+
+
+# MERN Blog Application
+
+A modern blogging platform built with the MERN stack (MongoDB, Express, React, Node.js).
+
+## 🚀 Features
+
+- User authentication
+- Create, edit, and delete blog posts
+- Category management
+- Responsive design
+- Rich text editor
+
+## 📸 Screenshots
+
+### Homepage
+![Homepage View]
+*Main blog listing with recent posts*
+
+### Authentication
+![Login Interface]
+*User login screen*
+
+![Registration Form](./screenshots/register.png)
+*New user registration form*
+
+### Blog Management
+![Create Blog Post](./screenshots/create.png)
+*Create new blog post with rich text editor*
+
+![View Blog Post](./screenshots/post.png)
+*Single blog post view with comments*
+
+## 🛠️ Tech Stack
+
+- Frontend: React + Vite
+- Backend: Node.js + Express
+- Database: MongoDB
+- Authentication: JWT
+
+## ⚡ Quick Start
+
+### Prerequisites
+- Node.js v14+
+- MongoDB
+
+### Installation
+
+1. Clone the repository:
+```bash
+git clone https://github.com/yourusername/mern-blog-app.git
+cd mern-blog-app
+```
+
+2. Install dependencies:
+```bash
+# Install server dependencies
+cd server
+npm install
+
+# Install client dependencies
+cd ../client
+npm install
+```
+
+3. Set up environment variables:
+- Create `.env` in server directory
+- Create `.env.local` in client directory
+
+4. Start the application:
+```bash
+# Start server (from server directory)
+npm start
+
+# Start client (from client directory)
+npm run dev
+```
+
+Visit `http://localhost:5173` to view the application.
+
+## 📝 License
+
+MIT License
