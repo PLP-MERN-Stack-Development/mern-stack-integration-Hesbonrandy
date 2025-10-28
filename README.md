@@ -2,22 +2,24 @@
 
 A full-stack blog application built with the MERN stack (MongoDB, Express, React, Node.js).
 
-## Screenshots
+## 📸 Screenshots
 
 ### Homepage
-Homepage View
+![Homepage View](./screenshots/home.png)
+*Main blog listing with recent posts*
 
 ### Authentication
-Login Interface
+![Login Interface](./screenshots/login.png)
+*User login screen*
 
-Registration Form
+![Registration Form](./screenshots/register.png)
 *New user registration form*
 
 ### Blog Management
-Create Blog Post
+![Create Blog Post](./screenshots/create.png)
 *Create new blog post with rich text editor*
 
-View Blog Post
+![View Blog Post](./screenshots/post.png)
 *Single blog post view with comments*
 
 ## Features
