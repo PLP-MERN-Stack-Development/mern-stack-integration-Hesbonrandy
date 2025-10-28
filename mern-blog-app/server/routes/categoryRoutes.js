@@ -1,19 +1,15 @@
 import express from 'express';
-import { getCategories, createCategory } from '../controllers/categoryController.js';
-import {
-  validateCategory,
-  handleValidationErrors
-} from '../middleware/validation.js';
+import { getCategories, createCategory, updateCategory, deleteCategory } from '../controllers/categoryController.js';
+import { validateCategory, validateId, handleValidationErrors } from '../middleware/validation.js';
 
 const router = express.Router();
 
-// @route   GET /api/categories
-// @desc    Get all categories
-router.get('/', getCategories);
+router.route('/')
+  .get(getCategories)
+  .post(validateCategory, handleValidationErrors, createCategory);
 
-// @route   POST /api/categories
-// @desc    Create a new category
-router.post('/', validateCategory, handleValidationErrors, createCategory);
+router.route('/:id')
+  .put(validateId, validateCategory, handleValidationErrors, updateCategory)
+  .delete(validateId, handleValidationErrors, deleteCategory);
 
-// Critical: export the router as default
 export default router;

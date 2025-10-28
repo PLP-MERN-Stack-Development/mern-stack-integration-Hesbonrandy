@@ -7,25 +7,19 @@ export default function CreatePost() {
   const [content, setContent] = useState('');
   const [category, setCategory] = useState('');
   const [categories, setCategories] = useState([]);
-  const [newCategory, setNewCategory] = useState(''); // For new category input
+  const [newCategory, setNewCategory] = useState('');
+  const [editingCatId, setEditingCatId] = useState(null);
+  const [editCatName, setEditCatName] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const navigate = useNavigate();
   const { id } = useParams();
 
-  // Load categories on mount
+  // Load categories
   useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const res = await axios.get('/api/categories');
-        setCategories(res.data);
-      } catch (err) {
-        console.error('Error loading categories:', err);
-      }
-    };
     fetchCategories();
   }, []);
 
-  // If editing, load post data
+  // Load post if editing
   useEffect(() => {
     if (id) {
       setIsEditing(true);
@@ -36,14 +30,22 @@ export default function CreatePost() {
           setCategory(res.data.category._id);
         })
         .catch(err => {
-          console.error('Error loading post:', err);
-          alert('Failed to load post');
+          console.error(err);
           navigate('/');
         });
     }
   }, [id, navigate]);
 
-  // Handle post creation/update
+  const fetchCategories = async () => {
+    try {
+      const res = await axios.get('/api/categories');
+      setCategories(res.data);
+    } catch (err) {
+      console.error('Error loading categories:', err);
+    }
+  };
+
+  // Create post
   const handleSubmit = async (e) => {
     e.preventDefault();
     const postData = { title, content, category };
@@ -56,12 +58,11 @@ export default function CreatePost() {
       }
       navigate('/');
     } catch (err) {
-      alert('Failed to save post. Please ensure a category is selected.');
-      console.error(err);
+      alert('Failed to save post. Please select a valid category.');
     }
   };
 
-  // Handle new category creation
+  // Add new category
   const handleCreateCategory = async (e) => {
     e.preventDefault();
     if (!newCategory.trim()) return;
@@ -69,62 +70,143 @@ export default function CreatePost() {
     try {
       await axios.post('/api/categories', { name: newCategory.trim() });
       setNewCategory('');
-
-      // Refresh category list
-      const res = await axios.get('/api/categories');
-      setCategories(res.data);
-
-      // Optionally auto-select the new category
-      const newCat = res.data.find(cat => cat.name === newCategory.trim());
-      if (newCat) setCategory(newCat._id);
+      fetchCategories();
     } catch (err) {
       alert('Failed to create category. It may already exist.');
-      console.error(err);
+    }
+  };
+
+  // Start editing a category
+  const startEditCategory = (cat) => {
+    setEditingCatId(cat._id);
+    setEditCatName(cat.name);
+  };
+
+  // Save edited category
+  const handleUpdateCategory = async (e) => {
+    e.preventDefault();
+    try {
+      await axios.put(`/api/categories/${editingCatId}`, { name: editCatName });
+      setEditingCatId(null);
+      setEditCatName('');
+      fetchCategories();
+    } catch (err) {
+      alert('Failed to update category.');
+    }
+  };
+
+  // Delete category
+  const handleDeleteCategory = async (catId, catName) => {
+    if (!window.confirm(`Delete category "${catName}"? All posts in this category will lose their category.`)) return;
+
+    try {
+      await axios.delete(`/api/categories/${catId}`);
+      fetchCategories();
+      // If deleted category was selected, clear selection
+      if (category === catId) setCategory('');
+    } catch (err) {
+      alert('Failed to delete category.');
     }
   };
 
   return (
-    <div style={{ maxWidth: '600px', margin: '0 auto' }}>
+    <div style={{ maxWidth: '700px', margin: '0 auto' }}>
       <h2>{isEditing ? 'Edit Post' : 'Create New Post'}</h2>
 
-      {/* ➕ Add Category Section */}
-      <div style={{ marginBottom: '2rem', padding: '1rem', border: '1px solid #ddd', borderRadius: '4px' }}>
-        <h3>Add New Category</h3>
-        <form onSubmit={handleCreateCategory} style={{ display: 'flex', gap: '0.5rem' }}>
+      {/* 🗂️ Category Management */}
+      <div style={{ marginBottom: '2rem', padding: '1.5rem', border: '1px solid #ddd', borderRadius: '8px', backgroundColor: '#f9f9f9' }}>
+        <h3 style={{ marginTop: 0 }}>Manage Categories</h3>
+
+        {/* ➕ Add Category */}
+        <form onSubmit={handleCreateCategory} style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem' }}>
           <input
             type="text"
             value={newCategory}
             onChange={(e) => setNewCategory(e.target.value)}
-            placeholder="e.g., Technology, Travel, Food"
+            placeholder="Add new category (e.g., Technology)"
             required
-            style={{ flex: 1, padding: '0.5rem' }}
+            style={{ flex: 1, padding: '0.6rem', borderRadius: '4px', border: '1px solid #ccc' }}
           />
-          <button type="submit" style={{ padding: '0.5rem 1rem' }}>
-            Add Category
+          <button type="submit" style={{ padding: '0.6rem 1rem', backgroundColor: '#4CAF50', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+            Add
           </button>
         </form>
+
+        {/* 📋 Category List */}
+        <div>
+          <h4>Existing Categories ({categories.length})</h4>
+          {categories.length === 0 ? (
+            <p>No categories yet.</p>
+          ) : (
+            <ul style={{ listStyle: 'none', padding: 0 }}>
+              {categories.map(cat => (
+                <li key={cat._id} style={{ display: 'flex', alignItems: 'center', padding: '0.5rem', borderBottom: '1px solid #eee' }}>
+                  {editingCatId === cat._id ? (
+                    // Edit mode
+                    <form onSubmit={handleUpdateCategory} style={{ display: 'flex', gap: '0.5rem', flex: 1 }}>
+                      <input
+                        type="text"
+                        value={editCatName}
+                        onChange={(e) => setEditCatName(e.target.value)}
+                        required
+                        style={{ flex: 1, padding: '0.4rem', borderRadius: '4px', border: '1px solid #ccc' }}
+                      />
+                      <button type="submit" style={{ padding: '0.4rem 0.8rem', backgroundColor: '#2196F3', color: 'white', border: 'none', borderRadius: '4px' }}>
+                        Save
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setEditingCatId(null)}
+                        style={{ padding: '0.4rem 0.8rem', backgroundColor: '#9E9E9E', color: 'white', border: 'none', borderRadius: '4px', marginLeft: '0.5rem' }}
+                      >
+                        Cancel
+                      </button>
+                    </form>
+                  ) : (
+                    // View mode
+                    <>
+                      <span style={{ flex: 1 }}>{cat.name}</span>
+                      <button
+                        onClick={() => startEditCategory(cat)}
+                        style={{ padding: '0.3rem 0.6rem', marginRight: '0.5rem', backgroundColor: '#FF9800', color: 'white', border: 'none', borderRadius: '4px' }}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDeleteCategory(cat._id, cat.name)}
+                        style={{ padding: '0.3rem 0.6rem', backgroundColor: '#f44336', color: 'white', border: 'none', borderRadius: '4px' }}
+                      >
+                        Delete
+                      </button>
+                    </>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       </div>
 
       {/* 📝 Post Form */}
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
         <div>
-          <label>Title:</label>
+          <label><strong>Title:</strong></label>
           <input
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             required
-            style={{ width: '100%', padding: '0.5rem' }}
+            style={{ width: '100%', padding: '0.7rem', marginTop: '0.3rem', borderRadius: '4px', border: '1px solid #ccc' }}
           />
         </div>
 
         <div>
-          <label>Category:</label>
+          <label><strong>Category:</strong></label>
           <select
             value={category}
             onChange={(e) => setCategory(e.target.value)}
             required
-            style={{ width: '100%', padding: '0.5rem' }}
+            style={{ width: '100%', padding: '0.7rem', marginTop: '0.3rem', borderRadius: '4px', border: '1px solid #ccc' }}
           >
             <option value="">-- Select Category --</option>
             {categories.map(cat => (
@@ -136,24 +218,24 @@ export default function CreatePost() {
         </div>
 
         <div>
-          <label>Content:</label>
+          <label><strong>Content:</strong></label>
           <textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
             required
-            rows="8"
-            style={{ width: '100%', padding: '0.5rem' }}
+            rows="10"
+            style={{ width: '100%', padding: '0.7rem', marginTop: '0.3rem', borderRadius: '4px', border: '1px solid #ccc', fontFamily: 'inherit' }}
           />
         </div>
 
         <div>
-          <button type="submit" style={{ padding: '0.75rem 1.5rem', fontSize: '1rem' }}>
+          <button type="submit" style={{ padding: '0.8rem 2rem', fontSize: '1.1rem', backgroundColor: '#4CAF50', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer' }}>
             {isEditing ? 'Update Post' : 'Create Post'}
           </button>
           <button
             type="button"
             onClick={() => navigate('/')}
-            style={{ marginLeft: '1rem', padding: '0.75rem 1.5rem' }}
+            style={{ marginLeft: '1rem', padding: '0.8rem 2rem', fontSize: '1.1rem', backgroundColor: '#6c757d', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer' }}
           >
             Cancel
           </button>
