@@ -14,21 +14,19 @@ export default function PostDetail() {
         setLoading(false);
       })
       .catch(err => {
-        console.error('Error fetching post:', err);
+        console.error(err);
         setLoading(false);
       });
   }, [id]);
 
-  if (loading) return <p>Loading post...</p>;
-  if (!post) return <p>Post not found.</p>;
+  if (loading) return <p>Loading...</p>;
+  if (!post) return <p>Post not found</p>;
 
   return (
     <div>
       <h1>{post.title}</h1>
-      <p><strong>Category:</strong> {post.category?.name}</p>
       <p>{post.content}</p>
-      <p><em>By {post.author} on {new Date(post.createdAt).toLocaleDateString()}</em></p>
-      <Link to="/">← Back to Posts</Link>
+      <Link to="/">← Back</Link>
     </div>
   );
 }

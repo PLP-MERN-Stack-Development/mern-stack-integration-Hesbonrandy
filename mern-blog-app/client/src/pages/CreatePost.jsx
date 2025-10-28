@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 export default function CreatePost() {
@@ -7,99 +7,45 @@ export default function CreatePost() {
   const [content, setContent] = useState('');
   const [category, setCategory] = useState('');
   const [categories, setCategories] = useState([]);
-  const [isEditing, setIsEditing] = useState(false);
-  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { id } = useParams();
 
-  // Load categories
   useEffect(() => {
     axios.get('/api/categories')
-      .then(res => setCategories(res.data))
-      .catch(err => console.error('Error loading categories:', err));
+      .then(res => setCategories(res.data));
   }, []);
-
-  // If editing, load post data
-  useEffect(() => {
-    if (id) {
-      setIsEditing(true);
-      axios.get(`/api/posts/${id}`)
-        .then(res => {
-          setTitle(res.data.title);
-          setContent(res.data.content);
-          setCategory(res.data.category._id);
-        })
-        .catch(err => {
-          console.error('Error loading post:', err);
-          alert('Failed to load post for editing');
-          navigate('/');
-        });
-    }
-  }, [id, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
-
-    const postData = { title, content, category };
-
     try {
-      if (isEditing) {
-        await axios.put(`/api/posts/${id}`, postData);
-      } else {
-        await axios.post('/api/posts', postData);
-      }
+      await axios.post('/api/posts', { title, content, category });
       navigate('/');
     } catch (err) {
-      console.error('Save error:', err.response?.data || err.message);
-      alert('Failed to save post. Please check the form.');
-      setLoading(false);
+      alert('Error saving post');
+      console.error(err);
     }
   };
 
   return (
     <form onSubmit={handleSubmit}>
-      <h2>{isEditing ? 'Edit Post' : 'Create New Post'}</h2>
-      <div style={{ marginBottom: '1rem' }}>
-        <label>Title:</label><br />
-        <input
-          type="text"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          required
-          style={{ width: '100%', padding: '0.5rem' }}
-        />
+      <h2>Create New Post</h2>
+      <div>
+        <label>Title:</label>
+        <input value={title} onChange={e => setTitle(e.target.value)} required />
       </div>
-      <div style={{ marginBottom: '1rem' }}>
-        <label>Category:</label><br />
-        <select
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
-          required
-          style={{ width: '100%', padding: '0.5rem' }}
-        >
-          <option value="">-- Select Category --</option>
+      <div>
+        <label>Category:</label>
+        <select value={category} onChange={e => setCategory(e.target.value)} required>
+          <option value="">Select</option>
           {categories.map(cat => (
             <option key={cat._id} value={cat._id}>{cat.name}</option>
           ))}
         </select>
       </div>
-      <div style={{ marginBottom: '1rem' }}>
-        <label>Content:</label><br />
-        <textarea
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          required
-          rows="10"
-          style={{ width: '100%', padding: '0.5rem' }}
-        />
+      <div>
+        <label>Content:</label>
+        <textarea value={content} onChange={e => setContent(e.target.value)} required rows="5" />
       </div>
-      <button type="submit" disabled={loading}>
-        {loading ? 'Saving...' : isEditing ? 'Update Post' : 'Create Post'}
-      </button>
-      <button type="button" onClick={() => navigate('/')} style={{ marginLeft: '1rem' }}>
-        Cancel
-      </button>
+      <button type="submit">Create Post</button>
     </form>
   );
 }
