@@ -25,6 +25,34 @@ export default function CreatePost() {
     }
   };
 
+  <div>
+  <h3>Create Category</h3>
+  <form onSubmit={handleCreateCategory} style={{ display: 'flex', gap: '0.5rem' }}>
+    <input
+      type="text"
+      value={newCategory}
+      onChange={(e) => setNewCategory(e.target.value)}
+      placeholder="New category name"
+      required
+    />
+    <button type="submit">Add Category</button>
+  </form>
+</div>
+  const [newCategory, setNewCategory] = useState('');
+
+  const handleCreateCategory = async (e) => {
+  e.preventDefault();
+  try {
+    await axios.post('/api/categories', { name: newCategory });
+    setNewCategory('');
+    // Refresh categories
+    const res = await axios.get('/api/categories');
+    setCategories(res.data);
+  } catch (err) {
+    alert('Failed to create category');
+  }
+};
+
   return (
     <form onSubmit={handleSubmit}>
       <h2>Create New Post</h2>
